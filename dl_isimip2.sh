@@ -6,13 +6,14 @@
 # Pull updates from github with
 # git pull origin master
 
-echo "Welcome to the ISI-MIP2.1 Downloader";echo
-
+# Your DKRZ Account
 VRE1_ACC=b324025
-VRE1_BASE_PATH=/gpfs_750/projects/ISI_MIP/data/upload_area_ISI-MIP2.1
 
+# Basic Variables
+VRE1_BASE_PATH=/gpfs_750/projects/ISI_MIP/data/upload_area_ISI-MIP2.1
 RSYNC_CMD="rsync -ucdlv --delete"
 
+echo "### WELCOME TO THE DOWNLOADER FOR ISI-MIP2.1 RESULTS ###";echo
 echo -n "get latest stats file..."
 scp -q $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/_upload_stats/.last.uploadedFiles.list .LAST_UL_LIST && echo " done" || exit
 
