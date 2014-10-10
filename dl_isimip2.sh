@@ -1,4 +1,12 @@
 #!/bin/bash
+# Download Script for ISI-MIP2.1 Uploads to DKRZ Server
+# written by Matthias Büchner <buechner@pik-potsdam.de>
+# This script can also be pulled from Github with
+# git clone git@github.com:ISI-MIP/ISI-MIP2.1_Download.git
+# Pull updates from github with
+# git pull origin master
+
+echo "Welcome to the ISI-MIP2.1 Downloader";echo
 
 VRE1_ACC=b324025
 VRE1_BASE_PATH=/gpfs_750/projects/ISI_MIP/data/upload_area_ISI-MIP2.1
