@@ -1,5 +1,5 @@
 #!/bin/bash
-# Download Script for ISI-MIP2.1 Uploads to DKRZ Server
+# Download Script for ISI-MIP2.1 simulation results from DKRZ Server
 # written by Matthias Büchner <buechner@pik-potsdam.de>
 # This script can also be pulled from Github with
 # git clone git@github.com:ISI-MIP/ISI-MIP2.1_Download.git
@@ -156,9 +156,9 @@ for DIR in $(cat .DIR_LIST);do
     mkdir -p $DIR
     case $VAR in
         ALL)
-            $RSYNC_CMD vre1:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
+            $RSYNC_CMD vre1.dkrz.de:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
         *)
-            $RSYNC_CMD --include=*_"$VAR"_* --exclude=* vre1:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
+            $RSYNC_CMD --include=*_"$VAR"_* --exclude=* vre1.dkrz.de:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
     esac
 done
 
