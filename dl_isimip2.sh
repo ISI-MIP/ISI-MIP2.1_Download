@@ -39,6 +39,7 @@ SECTOR=${SECTORS[$SECTOR_ID]}
 
 #extract models for sector
 MODELS=$(grep $SECTOR .LAST_LIST | cut -d" " -f3 | cut -d"/" -f2 | sort | uniq)
+[[ $MODELS == "" ]] && echo "No Data available. exiting..." && exit
 echo;echo "Select Model(s):"
 MODEL_ARRAY=( $MODELS )
 MODEL_LEN=$((${#MODEL_ARRAY[@]} - 1))
@@ -97,7 +98,7 @@ for DIR in $(cat .DIR_LIST|uniq);do
         FILE=$(basename $FILE)
         VAR=$(echo $FILE |rev| cut -d"_" -f5|rev)
         case $VAR in
-            soy|mai|whe)
+            whe|mai|soy|ric|sor|mil|rap|sug|sgb|bar|rye|oat|mgr|sun|cas|nut|pea|ben|cot)
                 VAR=$(echo $FILE |rev| cut -d"_" -f6|rev)_$VAR;;
         esac
         echo $VAR >> .VAR_LIST_TEMP
@@ -142,7 +143,7 @@ done
 
 # DOWNLOAD!
 for DIR in $(cat .DIR_LIST);do
-		echo;echo "Downloading from $DIR :"
+    echo;echo "Downloading from $DIR/ :"
     mkdir -p $DIR
     case $VAR in
         ALL)
@@ -154,4 +155,3 @@ done
 
 rm .*_LIST
 echo ;echo " ...done"
-
