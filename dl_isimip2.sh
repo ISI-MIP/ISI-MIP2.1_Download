@@ -6,11 +6,11 @@ VRE1_BASE_PATH=/gpfs_750/projects/ISI_MIP/data/upload_area_ISI-MIP2.1
 RSYNC_CMD="rsync -ucdlv --delete"
 
 echo -n "get latest stats file..."
-scp -q $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/_upload_stats/.last.uploadedFiles.list . && echo " done" || exit
+scp -q $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/_upload_stats/.last.uploadedFiles.list .LAST_UL_LIST && echo " done" || exit
 
 echo -n "get latest list of uploaded files..."
-LASTLIST=$(cat .last.uploadedFiles.list)
-scp -q $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/_upload_stats/$LASTLIST .LASTLIST && echo " done" || exit
+LAST_LIST=$(cat .LAST_UL_LIST)
+scp -q $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/_upload_stats/$LAST_LIST .LAST_LIST && echo " done" || exit
 
 # select sector from list
 SECTORS[1]="agriculture"
@@ -38,7 +38,7 @@ done
 SECTOR=${SECTORS[$SECTOR_ID]}
 
 #extract models for sector
-MODELS=$(grep $SECTOR .LASTLIST | cut -d" " -f3 | cut -d"/" -f2 | sort | uniq)
+MODELS=$(grep $SECTOR .LAST_LIST | cut -d" " -f3 | cut -d"/" -f2 | sort | uniq)
 echo;echo "Select Model(s):"
 MODEL_ARRAY=( $MODELS )
 MODEL_LEN=$((${#MODEL_ARRAY[@]} - 1))
@@ -54,7 +54,7 @@ done
 
 #extract input type for sector and model combination
 [ $MODEL_ID = 0 ] && GREP_VAL_MODEL="/" || GREP_VAL_MODEL=$MODEL
-INPUT_TYPES=$(grep $SECTOR .LASTLIST | grep $GREP_VAL_MODEL | cut -d" " -f3 | cut -d"/" -f3 | sort | uniq)
+INPUT_TYPES=$(grep $SECTOR .LAST_LIST | grep $GREP_VAL_MODEL | cut -d" " -f3 | cut -d"/" -f3 | sort | uniq)
 echo;echo "Select Input Data Type:"
 INPUT_TYPE_ARRAY=( $INPUT_TYPES )
 INPUT_TYPE_LEN=$((${#INPUT_TYPE_ARRAY[@]} - 1))
@@ -70,7 +70,7 @@ done
 
 #extract input type for sector and model combination
 [ $INPUT_TYPE_ID = 0 ] && GREP_VAL_INPUT_TYPE="/" || GREP_VAL_INPUT_TYPE=$INPUT_TYPE
-INPUT_DSETS=$(grep $SECTOR .LASTLIST | grep $GREP_VAL_MODEL | grep $GREP_VAL_INPUT_TYPE |cut -d" " -f3 | cut -d"/" -f4 | sort | uniq)
+INPUT_DSETS=$(grep $SECTOR .LAST_LIST | grep $GREP_VAL_MODEL | grep $GREP_VAL_INPUT_TYPE |cut -d" " -f3 | cut -d"/" -f4 | sort | uniq)
 echo;echo "Select Input Data Type:"
 INPUT_DSET_ARRAY=( $INPUT_DSETS )
 INPUT_DSET_LEN=$((${#INPUT_DSET_ARRAY[@]} - 1))
@@ -88,26 +88,26 @@ done
 echo
 
 #create list of directories to download files from
-cut -d" " -f3 .LASTLIST |grep $SECTOR | grep $GREP_VAL_MODEL | grep $GREP_VAL_INPUT_TYPE | grep $GREP_VAL_INPUT_DSET |cut -d "/" -f1-4 |sort > .DIRLIST
+cut -d" " -f3 .LAST_LIST |grep $SECTOR | grep $GREP_VAL_MODEL | grep $GREP_VAL_INPUT_TYPE | grep $GREP_VAL_INPUT_DSET |cut -d "/" -f1-4 |sort |uniq > .DIR_LIST
 
 #loop over directories to get list of available variables
-rm -f .VARLIST
-for DIR in $(cat .DIRLIST|uniq);do
-    for FILE in $(awk '{print $3}' .LASTLIST|grep $DIR);do
+rm -f .VAR_LIST
+for DIR in $(cat .DIR_LIST|uniq);do
+    for FILE in $(awk '{print $3}' .LAST_LIST|grep $DIR);do
         FILE=$(basename $FILE)
         VAR=$(echo $FILE |rev| cut -d"_" -f5|rev)
         case $VAR in
             soy|mai|whe)
                 VAR=$(echo $FILE |rev| cut -d"_" -f6|rev)_$VAR;;
         esac
-        echo $VAR >> .VARLIST_TEMP
+        echo $VAR >> .VAR_LIST_TEMP
     done
 done
-sort .VARLIST_TEMP |uniq > .VARLIST && rm .VARLIST_TEMP
+sort .VAR_LIST_TEMP |uniq > .VAR_LIST && rm .VAR_LIST_TEMP
 
 # Select Variable
 echo "Select Variable:"
-VAR_ARRAY=( $(cat .VARLIST) )
+VAR_ARRAY=( $(cat .VAR_LIST) )
 VAR_LEN=$((${#VAR_ARRAY[@]} - 1))
 echo "0) ALL"
 for VAR_ID in $(seq 0 $VAR_LEN);do
@@ -122,26 +122,26 @@ done
 
 # generate list of files to download
 
-rm -f .FILELIST
-for DIR in $(cat .DIRLIST|uniq);do
+rm -f .FILE_LIST
+for DIR in $(cat .DIR_LIST|uniq);do
     case $VAR in
         ALL)
-            grep $DIR .LASTLIST |cut -d" " -f3 >> .FILELIST_TEMP;;
+            grep $DIR .LAST_LIST |cut -d" " -f3 >> .FILE_LIST_TEMP;;
         *)
-            grep $DIR .LASTLIST | grep $VAR |cut -d" " -f3 >> .FILELIST_TEMP;;
+            grep $DIR .LAST_LIST | grep $VAR |cut -d" " -f3 >> .FILE_LIST_TEMP;;
     esac
 done
-sort .FILELIST_TEMP |uniq > .FILELIST && rm .FILELIST_TEMP
+sort .FILE_LIST_TEMP |uniq > .FILE_LIST && rm .FILE_LIST_TEMP
 
 # Watch list of files to download?
-DEFAULT_WATCH_LIST="y";echo
-while [[ "$WATCH_LIST" != "y" && "$WATCH_LIST" != "n" ]];do
-    read -e -p "Watch list of files to download? [y/n] : "  -i "n" WATCH_LIST
+DEFAULT_WATCH__LIST="y";echo
+while [[ "$WATCH__LIST" != "y" && "$WATCH__LIST" != "n" ]];do
+    read -e -p "Watch list of files to download? [y/n] : "  -i "n" WATCH__LIST
 done
-[ $WATCH_LIST == "y" ] && less .FILELIST
+[ $WATCH__LIST == "y" ] && less .FILE_LIST
 
 # DOWNLOAD!
-for DIR in $(cat .DIRLIST);do
+for DIR in $(cat .DIR_LIST);do
 		echo;echo "Downloading from $DIR :"
     mkdir -p $DIR
     case $VAR in
@@ -152,6 +152,6 @@ for DIR in $(cat .DIRLIST);do
     esac
 done
 
-#rm .*
+rm .*_LIST
 echo ;echo " ...done"
 
