@@ -3,6 +3,8 @@
 VRE1_ACC=b324025
 VRE1_BASE_PATH=/gpfs_750/projects/ISI_MIP/data/upload_area_ISI-MIP2.1
 
+RSYNC_CMD="rsync -ucdlv --delete"
+
 echo -n "get latest stats file..."
 scp -q $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/_upload_stats/.last.uploadedFiles.list . && echo " done" || exit
 
@@ -92,19 +94,19 @@ cut -d" " -f3 .LASTLIST |grep $SECTOR | grep $GREP_VAL_MODEL | grep $GREP_VAL_IN
 rm -f .VARLIST
 for DIR in $(cat .DIRLIST|uniq);do
     for FILE in $(awk '{print $3}' .LASTLIST|grep $DIR);do
-				FILE=$(basename $FILE)
+        FILE=$(basename $FILE)
         VAR=$(echo $FILE |rev| cut -d"_" -f5|rev)
         case $VAR in
             soy|mai|whe)
                 VAR=$(echo $FILE |rev| cut -d"_" -f6|rev)_$VAR;;
         esac
-				echo $VAR >> .VARLIST_TEMP
+        echo $VAR >> .VARLIST_TEMP
     done
 done
 sort .VARLIST_TEMP |uniq > .VARLIST && rm .VARLIST_TEMP
 
 # Select Variable
-echo;echo "Select Input Data Type:"
+echo "Select Variable:"
 VAR_ARRAY=( $(cat .VARLIST) )
 VAR_LEN=$((${#VAR_ARRAY[@]} - 1))
 echo "0) ALL"
@@ -116,5 +118,40 @@ while [ $VAR_ID -lt 0 -o $VAR_ID -gt $(($VAR_LEN + 1)) ];do
     read -e -p "option : " VAR_ID
 done
 [ $VAR_ID = 0 ] && VAR="ALL" || VAR=${VAR_ARRAY[$(($VAR_ID - 1))]}
+[ $VAR_ID = 0 ] && GREP_VAL_VAR="/" || GREP_VAL_VAR=$VAR
 
-echo $VAR
+# generate list of files to download
+
+rm -f .FILELIST
+for DIR in $(cat .DIRLIST|uniq);do
+    case $VAR in
+        ALL)
+            grep $DIR .LASTLIST |cut -d" " -f3 >> .FILELIST_TEMP;;
+        *)
+            grep $DIR .LASTLIST | grep $VAR |cut -d" " -f3 >> .FILELIST_TEMP;;
+    esac
+done
+sort .FILELIST_TEMP |uniq > .FILELIST && rm .FILELIST_TEMP
+
+# Watch list of files to download?
+DEFAULT_WATCH_LIST="y";echo
+while [[ "$WATCH_LIST" != "y" && "$WATCH_LIST" != "n" ]];do
+    read -e -p "Watch list of files to download? [y/n] : "  -i "n" WATCH_LIST
+done
+[ $WATCH_LIST == "y" ] && less .FILELIST
+
+# DOWNLOAD!
+for DIR in $(cat .DIRLIST);do
+		echo;echo "Downloading from $DIR :"
+    mkdir -p $DIR
+    case $VAR in
+        ALL)
+            $RSYNC_CMD vre1:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
+        *)
+            $RSYNC_CMD --include=*_"$VAR"_* --exclude=* vre1:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
+    esac
+done
+
+#rm .*
+echo ;echo " ...done"
+
