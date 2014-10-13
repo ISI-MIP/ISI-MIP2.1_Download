@@ -156,9 +156,9 @@ for DIR in $(cat .DIR_LIST);do
     mkdir -p $DIR
     case $VAR in
         ALL)
-            $RSYNC_CMD vre1.dkrz.de:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
+            $RSYNC_CMD $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
         *)
-            $RSYNC_CMD --include=*_"$VAR"_* --exclude=* vre1.dkrz.de:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
+            $RSYNC_CMD --include=*_"$VAR"_* --exclude=* $VRE1_ACC@vre1.dkrz.de:$VRE1_BASE_PATH/$DIR/ $DIR |grep nc4;;
     esac
 done
 
