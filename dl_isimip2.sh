@@ -1,10 +1,13 @@
 #!/bin/bash
 # Download Script for ISI-MIP2.1 simulation results from DKRZ Server
 # written by Matthias Büchner <buechner@pik-potsdam.de>
+
 # This script can also be pulled from Github with
-# git clone git@github.com:ISI-MIP/ISI-MIP2.1_Download.git
-# Pull updates from github with
-# git pull origin master
+# 'git clone git@github.com:ISI-MIP/ISI-MIP2.1_Download.git'
+# Pull updates from github with 'git pull origin master'
+
+# to avoid entering your password on each scp/rsync call generate a local key pair with ssh-keygen
+# and add content of your public ssh key (id_[r|d]sa.pub) to vre1.dkrz.de~/.ssh/authorized_keys
 
 # Your DKRZ Account
 VRE1_ACC=b324025
